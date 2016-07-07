@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<transform xmlns="http://etl.dob.sk/transform" stylesheet="xslt:file://_copy.xsl">
+<dml dsn="Pg:dbname=js1" user="" password="" autocommit="0" output="xml" xmlns="http://etl.dob.sk/dmlquery">
+	<prepare name="feeds_to_update">SELECT * FROM job.source LIMIT 5;</prepare>
+	<execute name="feeds_to_update" xml="1" diag="1">
+		<!-- <param name="entries1">10</param> -->
+		<!-- <param name="entries2">2</param> -->
+	</execute>
+</dml>
+</transform>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<it:iterate xmlns:it="http://etl.dob.sk/iterat" limit="2">	<!-- iterate NOT WORKING -->
+	<dml dsn="Pg:dbname=js1" user="" password="" output="xml" xmlns="http://etl.dob.sk/dmlquery" it:iterator="1">
+		<prepare name="feeds_to_update">SELECT * FROM job.source;</prepare>
+		<execute name="feeds_to_update">
+			<!-- <param name="entries1">10</param> -->
+			<!-- <param name="entries2">2</param> -->
+		</execute>
+	</dml>
+</it:iterate>

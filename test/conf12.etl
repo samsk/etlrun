@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<trans:transform xmlns:trans="http://etl.dob.sk/transform"
+			xmlns:url="http://etl.dob.sk/url"
+			xmlns:embed="http://etl.dob.sk/embed"
+			xmlns:etl="http://etl.dob.sk/etl"
+			stylesheet="xslt:file://_copy.xsl">
+<group:group xmlns:group="http://etl.dob.sk/group/parallel" parallel="10" etl:loopback="1">
+<url:url>embed://res1</url:url>
+<url:url>embed://res2</url:url>
+<url:url>file://test1.dml</url:url>
+<url:url>file://test1.dml</url:url>
+<url:url>file://conf0.etl</url:url>
+<url:url>file://test1.dml</url:url>
+<url:url>file://test1.dml</url:url>
+<url:url>file://conf0.etl</url:url>
+</group:group>
+<embed:embed id="res1"><kocka>hi</kocka></embed:embed>
+<embed:embed id="res2"><kocka>hello</kocka></embed:embed>
+<etl:attachment xmlns:etl="http://etl.dob.sk/etl">
+<hurrah/>
+</etl:attachment>
+</trans:transform>

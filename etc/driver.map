@@ -1,0 +1,31 @@
+# driver mapping
+# <schema>			<driver>	<namespace uri hint>
+# OR
+# <namespace uri>		<driver>
+http://etl.dob.sk/file		file
+dmlquery			file		http://etl.dob.sk/dmlquery
+dml				file		http://etl.dob.sk/dmlquery
+http://etl.dob.sk/dmlquery	db
+etlp				file		http://etl.dob.sk/etlp
+etl				file		http://etl.dob.sk/etlp
+http://etl.dob.sk/etlp		etlp
+http://etl.dob.sk/http		http
+https				http		http://etl.dob.sk/http
+app				file		http://etl.dob.sk/app
+http://etl.dob.sk/app		app
+http://etl.dob.sk/data		data
+http://etl.dob.sk/transform	transform
+transform			file		http://etl.dob.sk/transform
+http://etl.dob.sk/group		group
+http://etl.dob.sk/group/parallel	group::parallel
+http://etl.dob.sk/url		url
+http://etl.dob.sk/lock		lock
+#http://etl.dob.sk/util#(.+?)	util::$1
+http://etl.dob.sk/util#echo	util::echo
+http://etl.dob.sk/util#sleep	util::sleep
+http://etl.dob.sk/util#procname	util::procname
+http://etl.dob.sk/iterate	iterate
+http://etl.dob.sk/null		null
+http://etl.dob.sk/adapt		adapt
+http://etl.dob.sk/file/writer/simple	file::writer::simple
+http://etl.dob.sk/exec		exec

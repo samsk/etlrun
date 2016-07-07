@@ -1,0 +1,102 @@
+#!/usr/bin/perl
+# etlproc
+package etlproc;
+
+use strict;
+use warnings;
+
+use File::Basename;
+use Data::Dumper;
+#use Getopt::Long qw(:config no_ignore_case);
+
+# base Root
+our $bRoot;
+BEGIN {	$bRoot = dirname(dirname(__FILE__) . '/' . dirname(readlink(__FILE__) || '/' ));
+	$bRoot = '..' if($bRoot eq '.'); };
+
+# scripts
+require "$bRoot/bin/etlrun";
+
+# external libs
+#use lib $bRoot . '/lib';
+#use lib $bRoot . '/lib/arch';
+use lib $bRoot . '/contrib/lib';
+use lib $bRoot . '/contrib/arch';
+
+# internal modules
+use lib $bRoot . '/modules';
+#use core;
+#use core::conf;
+#use core::debug;
+#use core::kernel;
+use core::encode;
+
+# modulino concept
+exit(&main(@ARGV)) if(!caller());
+
+sub main(@)
+{
+	my (@argv) = @_;
+	my ($stylesheet, $file, @params, @argv2);
+	my $cache = "";
+
+	while(@argv)
+	{
+		my $arg = shift(@argv);
+
+		if($arg =~ /^--?(c|cache)(=(.*))$/o)
+		{
+			my $argopt = defined($3) ? $3 : shift(@argv);
+			$cache = $argopt;
+		}
+		elsif($arg =~ /^--?(h|elp)$/o)
+		{	die("NOT IMPLEMENTED (YET)");	}
+		elsif($arg =~ /^-/o)
+		{	push(@argv2, $arg);	}
+		elsif(!defined($stylesheet))
+		{	$stylesheet = $arg;	}
+		elsif(!defined($file))
+		{	$file = $arg;		}
+		else
+		{	push(@argv2, $arg);	}
+	}
+
+	if(!$stylesheet)
+	{
+		print STDERR <<__EOF__;
+usage: $0 <transformator:url> [ <source1> ... <sourceN> ]
+
+[transformator]
+	xpath:<xpath-expression>?ns1=namespace1...
+	xslt:<url-to-xslt-file>
+	null:
+__EOF__
+		return 1;
+	}
+
+	# default read stdin
+	$file = "stdin://"
+		if(!$file);
+
+	# allow non-fully specified local files urls
+	my @files = ($file);
+	for(my $ii = 0; $ii <= $#files; $ii++)
+	{
+		if($files[$ii] !~ /[\r\n]/o && -e $files[$ii])
+		{
+			core::conf::file_path(File::Spec->rel2abs(dirname($files[$ii])));
+			$files[$ii] = 'file://' . $files[$ii];
+		}
+	}
+
+	my $data = <<__EOF__;
+<?xml version="1.0"?>
+<tr:transform xmlns:tr="http://etl.dob.sk/transform" xmlns:u="http://etl.dob.sk/url" xmlns:e="http://etl.dob.sk/etl"
+		stylesheet="$stylesheet">
+	<u:url e:cache="$cache">$files[0]</u:url>
+</tr:transform>
+__EOF__
+
+	return etlrun::main("data://" . core::encode::base64_encode($data), @argv2, @params);
+}
+

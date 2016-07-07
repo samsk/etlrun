@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<write xmlns="http://etl.dob.sk/file/writer/simple" xml="1" file="/tmp/t_01.xml">
+	<root>
+		<hello/>
+	</root>
+</write>

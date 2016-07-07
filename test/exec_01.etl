@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<e:exec xmlns:e="http://etl.dob.sk/exec">
+	<db:dml dsn="reuse" xml="1" xmlns:db="http://etl.dob.sk/dmlquery">
+		<db:prepare name="t1">SELECT now(), ?::text AS msg;</db:prepare>
+		<db:exec name="t1">
+			<db:param name="msg" required="1" external="1"></db:param>
+		</db:exec>
+	</db:dml>
+	<e:param name="msg">hello</e:param>
+</e:exec>

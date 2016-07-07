@@ -1,0 +1,164 @@
+#!/usr/bin/perl
+# etlrun
+package etlrun;
+
+# includes
+use strict;
+use warnings;
+
+use File::Basename;
+use File::Spec qw(rel2abs);
+use Data::Dumper;
+#use Test::LeakTrace;
+use Getopt::Long qw(:config no_ignore_case);
+#use sigtrap qw(normal-signals stack-trace error-signals);
+
+# base Root
+our $bRoot;
+BEGIN {	$bRoot = dirname(dirname(__FILE__) . '/' . dirname(readlink(__FILE__) || '/' ));
+	$bRoot = '..' if($bRoot eq '.'); };
+
+# external libs
+#use lib $bRoot . '/lib';
+#use lib $bRoot . '/lib/arch';
+use lib $bRoot . '/contrib/lib';
+use lib $bRoot . '/contrib/arch';
+
+# internal modules
+use lib $bRoot . '/modules';
+use core;
+use core::log;
+use core::conf;
+use core::trace;
+use core::kernel;
+
+#core::debug::waitdebugger();
+
+# modulino concept
+exit(&main(@ARGV)) if(!caller());
+
+sub _handle_reload()
+{
+	warn("$0: *** reload flag updated ***\n");
+	core::conf::FLAG_RELOAD_TIME(time());
+	die;
+}
+
+sub _print_out($$$)
+{
+	my ($doc, $outfh, $format) = @_;
+
+	# print unformated to file
+	if(core::xml::isDocument($doc))
+	{
+		$doc->toFH($outfh, $format);
+	}
+	else
+	{
+		print '<?xml version="1.0" encoding="utf-8"?>' . "\n";
+		print $outfh $doc->toString($format);
+	}
+}
+
+# main
+sub main(@)
+{
+	my (@argv) = @_;
+
+	# builtin defaults
+	core::conf::set('driver.http.response.cache', 300);
+#	core::conf::set('driver.db.response.cache', 10);
+	core::conf::set('etl.nocache.url', ['file']);
+	core::conf::file_path($bRoot . "/etc");
+	core::conf::data_path("/");
+
+	# parse command options
+	my $id = time();
+	my ($url, %params, $resp_file, $no_envelope, $no_output);
+	Getopt::Long::GetOptionsFromArray(\@argv,
+		"D|debug-level=i"	=> sub { core::log::level($_[1])    },
+		"T|trace=s"		=> sub { core::trace::init(File::Spec->rel2abs($_[1]))    },
+		"TT|ttrace=s"		=> sub { core::trace::init(File::Spec->rel2abs($_[1]), 2) },
+		"S|set|set-config=s"	=> sub { my ($opt, $val) = split('=', $_[1], 2); 
+						core::conf::set($opt, $val); },
+		"C|config-path=s"	=> sub { core::conf::file_path(File::Spec->rel2abs($_[1])); },
+		"I|include-path=s"	=> sub { core::conf::data_path(File::Spec->rel2abs($_[1])); },
+		"nr|no-refetch"		=> sub { $params{-norefetch} = 1; },
+		"id=s"			=> \$id,
+		"oe|open-envelop"	=> \$no_envelope,
+		"o|output=s"		=> \$resp_file,
+		"no-output"		=> \$no_output,
+		"<>"			=> sub {
+					if(!defined($url))
+					{	$url = "$_[0]";	}
+					else
+					{	my ($k, $v) = split(/=/o, "$_[0]", 2);
+						$params{ $k } = $v; }
+					},
+		"h|help"		=> sub { die("NOT IMPLEMENTED (YET) :-)"); }
+	);
+
+	# check params
+	die("usage: " . __PACKAGE__ . " [options] <url> [arguments]\n")
+		if(!defined($url));
+
+	# allow non-fully specified local files urls
+	if($url !~ /[\r\n]/o && -e $url)
+	{
+		my $dn = dirname($url);
+
+		# need to change dir for app:file-path to work - FIXME: correct this !
+		chdir($dn) || die("$0: failed to change dir to '$dn' - $!\n");
+
+		$dn = File::Spec->rel2abs($dn);
+
+		core::conf::data_path($dn);
+		core::conf::file_path($dn);
+		core::conf::file_path($dn . '/etllib');
+		$url = 'file://' . $url;
+	}
+
+	# install reload handler
+	$SIG{'USR1'} = \&_handle_reload;
+
+	# try to open response file (if needed)
+	my $resp_fh = *STDOUT;
+	die(__PACKAGE__ . ": failed to open '$resp_file' for writing - $!\n")
+		if(defined($resp_file) && !open($resp_fh, '>:encoding(UTF-8)', $resp_file));
+
+	# send req to kernel
+	my $resp = core::kernel::process($id, $url, $url, %params);
+
+	# write response
+	my $resp_node = (core::xml::isDocument($resp) ? $resp->documentElement : $resp);
+	my $resp_ct = core::get_attrib($resp_node, core::ATTR_CONTENT_TYPE);
+	if(defined($resp_ct) && $resp_ct eq core::CT_ERROR)
+	{
+		_print_out($resp, \*STDERR, !defined($resp_file))
+			if (!$no_output);
+		return 1;
+	}
+	else
+	{
+		# remove envelope
+		$resp->setDocumentElement($resp->documentElement()->firstChild())
+			if($no_envelope && core::xml::isDocument($resp));
+
+		_print_out($resp, $resp_fh, !defined($resp_file))
+			if (!$no_output);
+	}
+
+	# resp not needed anymore
+	$resp = undef;
+	undef $resp;
+
+	# close resp file if needed
+	close($resp_fh)
+		if(defined($resp_file));
+
+	# fini
+	return 0;
+}
+
+1;
+# EOF

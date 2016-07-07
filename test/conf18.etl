@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<http:req http:method="get" xmlns:http="http://etl.dob.sk/http" etl:cache="1 hour" xmlns:etl="http://etl.dob.sk/etl">
+	<!-- <http:url>http://www.funradio.sk/milion-roboty/api/0/7/</http:url> -->
+	<http:url>http://tmp.dob.sk/.tmp/x.json</http:url>
+	<http:header name="X-Requested-With">XMLHttpRequest</http:header>
+</http:req>

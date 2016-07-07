@@ -1,0 +1,12 @@
+# filter map
+# [mime type]
+# <when>	<filter>	<params...>
+#*		<rulez>
+#*=*		<rulez>
+#[text/*]
+
+[text/html]
+*			filter::rulez	file=rulez.filter
+#url.pkg=~sk\.avizo.*	filter::rulez	file=rulez.filter
+#url.pkg=sk.sme.praca	filter::rulez	file=rulez.filter
+#url.pkg=sk.dob.*	filter::rulez	file=rulez.filter

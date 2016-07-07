@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<g:group xmlns:g="http://etl.dob.sk/group">
+	<dml dsn="Pg:dbname=js1" user="" password="" output="xml" xmlns="http://etl.dob.sk/dmlquery">
+		<prepare name="feeds_to_update">SELECT * FROM job.source;</prepare>
+		<execute name="feeds_to_update">
+			<!-- <param name="entries1">10</param> -->
+			<!-- <param name="entries2">2</param> -->
+		</execute>
+	</dml>
+	<dml dsn="Pg:dbname=js1" user="" password="" output="xml" xmlns="http://etl.dob.sk/dmlquery">
+		<prepare name="feeds_to_update">SELECT * FROM job.source;</prepare>
+		<execute name="feeds_to_update">
+			<!-- <param name="entries1">10</param> -->
+			<!-- <param name="entries2">2</param> -->
+		</execute>
+	</dml>
+</g:group>

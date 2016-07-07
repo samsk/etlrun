@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<trans:transform xmlns:trans="http://etl.dob.sk/transform" xmlns:etl="http://etl.dob.sk/etl" xmlns:xhtml="http://www.w3.org/1999/xhtml"
+	stylesheet="xpath://_DEF_:html">
+	<n:null xmlns:n="http://etl.dob.sk/null" etl:force-content-type="text/html"><![CDATA[
+<html>
+<body>
+	<h3>Test 1</h3>
+	<h3>Test 2</h3>
+</body>
+<next>2</next>
+</html>
+]]></n:null></trans:transform>

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<l:lock id="x" xmlns:l="http://etl.dob.sk/lock"
+		xmlns:etl="http://etl.dob.sk/etl"
+		xmlns:echo="http://etl.dob.sk/util#echo"><echo:echo>HELLO0</echo:echo></l:lock>

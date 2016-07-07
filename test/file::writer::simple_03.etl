@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<w:write xmlns:w="http://etl.dob.sk/file/writer/simple" xml="1" multi="1" prefix="/tmp/t_03_" postfix=".xml">
+	<root w:file="01">
+		<hello>123</hello>
+	</root>
+	<root w:file="02">
+		<hello>2345</hello>
+	</root>
+	<root w:file="03">
+		<hello>34567</hello>
+	</root>
+</w:write>

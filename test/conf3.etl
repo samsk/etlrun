@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<etl xmlns="http://etl.dob.sk/etlp" xmlns:etl="http://etl.dob.sk/etl">
+	<!-- database source -->
+	<data name="sourcer" action="bootstrap">	<!-- load -->
+		<feed name="f1" date="" enabled="1" xsl="file://_copyETL.xsl">	<!-- transform -->
+			<source enabled="1" name="feeds" etl:cache="15 mins">	<!-- extract -->
+				<url>dmlquery://test1.dml</url>
+				<param name="x">123</param>
+			</source>
+			<source enabled="1" name="feeds" etl:cache="15 mins">	<!-- extract -->
+				<url>http://tmp.dob.sk/t1.xml</url>
+			</source>
+			<param name="OUTDB">Pg:dbname=js1</param>
+		</feed>
+	</data>
+</etl>

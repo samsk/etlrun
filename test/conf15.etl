@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<group:group xmlns:group="http://etl.dob.sk/group/parallel"
+			xmlns:url="http://etl.dob.sk/url"
+			xmlns:embed="http://etl.dob.sk/embed"
+			xmlns:l="http://etl.dob.sk/lock"
+			xmlns:etl="http://etl.dob.sk/etl"
+			xmlns:echo="http://etl.dob.sk/util#echo"
+			xmlns:sleep="http://etl.dob.sk/util#sleep"
+			parallel="10">
+<l:lock id="x3"><echo:echo>HELLO1</echo:echo></l:lock>
+<l:lock id="x3"><sleep:sleep timeout="10"/></l:lock>
+<l:lock id="x3" soft="1" retry="0"><echo:echo>HELLO2</echo:echo></l:lock>
+<l:lock id="x3" soft="1" retry="0"><echo:echo>HELLO3</echo:echo></l:lock>
+<l:lock id="x3"><echo:echo>HELLO4</echo:echo></l:lock>
+</group:group>

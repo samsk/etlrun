@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<etl xmlns="http://etl.dob.sk/etlp" xmlns:etl="http://etl.dob.sk/etl">
+	<!-- database source -->
+	<data name="sourcer" action="bootstrap">	<!-- load -->
+		<feed name="f1" date="" enabled="1" xsl="file://_copyETL.xsl">	<!-- transform -->
+			<source enabled="1" name="feeds1" xsl="file://_copyETL.xsl" etl:cache="30 seconds">	<!-- extract -->
+				<http:req http:method="post" xmlns:http="http://etl.dob.sk/http">
+					<http:url>http://tmp.dob.sk/t1.xml</http:url>
+				</http:req>
+			</source>
+			<param name="OUTDB">Pg:dbname=js1</param>
+		</feed>
+	</data>
+</etl>

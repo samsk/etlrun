@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<dml dsn="Pg:dbname=js2" user="" password="" autocommit="0" output="xml" xmlns="http://etl.dob.sk/dmlquery">
+	<prepare name="data_in">SELECT * FROM job.source LIMIT 5;</prepare>
+	<prepare name="data_out">SELECT ?::text;</prepare>
+	<execute name="data_in" store="data">
+		<!-- <param name="entries1">10</param> -->
+		<!-- <param name="entries2">2</param> -->
+	</execute>
+	<execute name="data_out">
+		<param name="text" fetch="data.name">DEFAULT</param>
+	</execute>
+	<etl:attachment xmlns:etl="http://etl.dob.sk/etl" xmlns="">
+		<HELLO>hi</HELLO>
+	</etl:attachment>
+</dml>

@@ -1,0 +1,20 @@
+# rulez filter
+####
+#
+# <regex> => <replace>
+# <regex> ==> <replace-with-match-variables>
+#
+####
+
+#panic => PAAAAAANIIIIC
+#<br/>	=> __BR__
+#xml: => xml_
+</?(fb|tw|g|):\w+:\w+	=>
+</?(fb|tw|g|):\w+	=>
+
+# convert utf8 quotas
+\x{201C}		=> "
+
+# fix simple unclosed tags
+(\w+)="(\w+?)<		==> $2="$1"<
+#(\w+)="(\w+?)&lt;	==> $2="$1"&lt;
