@@ -34,7 +34,7 @@ sub from($$$;$)
 		if (!$ok);
 	my $out = $result[0];
 
-	my $set_xhtml = core::conf::get('convert.text.html.xhtml', 0);
+	my $set_xhtml = core::conf::get('convert.text.html.xhtml', 1);
 	if ($set_xhtml) {
 		$out->documentElement()->setNamespace('http://www.w3.org/1999/xhtml', undef, 1);
 	} else {

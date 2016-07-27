@@ -19,6 +19,9 @@ use core::auto;
 use core::conf;
 use core::filter;
 
+our $MODULE = 'convert';
+our $NAMESPACE_URL = core::NAMESPACE_URL . '/convert';
+
 # apply_direct($reqid, $data, $content_type, $url)
 sub apply_direct($\$$$)
 {

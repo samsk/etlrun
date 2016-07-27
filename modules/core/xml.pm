@@ -27,8 +27,8 @@ sub create_document(;$$$)
 	return wantarray ? ($doc, $nod) : $doc;
 }
 
-# attrib($node, $name, $namespace, $default)
-sub attrib($$$;$)
+# attrib($node, $name [, $namespace, $default ])
+sub attrib($$;$$)
 {
 	my ($node, $name, $ns, $default) = @_;
 
@@ -36,8 +36,13 @@ sub attrib($$$;$)
 		if (ref($name) ne 'ARRAY');
 	foreach my $nam (@$name)
 	{
-		my $value = $node->getAttributeNS($ns, $nam)
-				|| $node->getAttribute($nam);
+		my $value;
+
+		$value = $node->getAttributeNS($ns, $nam)
+			if (defined($ns));
+		$value = $node->getAttribute($nam)
+			if (!defined($value));
+
 		return $value
 			if (defined($value));
 	}

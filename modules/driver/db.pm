@@ -76,7 +76,6 @@ sub _dmlquery($$$$)
 	my $password = core::xml::attrib($req, 'password', $NAMESPACE_URL, '');
 
 	# default DSN
-	my $dsn_def = core::conf::get('driver.db.dsn');
 	## /dml/@dsn
 	my $dsn = core::xml::attrib($req, 'dsn', $NAMESPACE_URL) || $dsn_def;
 	if (!$dsn)
@@ -89,16 +88,21 @@ sub _dmlquery($$$$)
 	}
 
 	## /dml/@dsn == 'reuse'
-	if ($dsn eq 'reuse')
+	## /dml/@dsn == 'reuse:ID'
+	if ($dsn =~ /^reuse(:([\w-]))?$/o)
 	{
-		$dsn = core::lru::last($CACHE) || $dsn_def;
+		my $id = $2;
 
-		if (!defined($dsn))
-		{
+		my $key = 'driver.db.dsn';
+		$key .= '.' . $id
+			if ($id);
+		
+		$dsn = core::conf::get($key);
+		if (!defined($dsn)) {
 			$resp->addChild(core::raise_error($reqid, $MODULE, 412,
 				_fatal => $resp,
 				req => $req,
-				msg => "PRECONDITION FAILED: no connection for reuse found"));
+				msg => "PRECONDITION FAILED: no connection for reuse defined under config $key"));
 			return undef;
 		}
 	}
@@ -395,7 +399,7 @@ sub _compile($$$$$\$%)
 		}
 		#execute prepare statement
 		## /dml/execute
-		elsif ($lname eq 'execute' || $node->localName() eq 'exec')
+		elsif ($lname eq 'execute' || $lname eq 'exec')
 		{
 			## /dml/execute/@name
 			my $name = core::xml::attrib($node, 'name', $NAMESPACE_URL);

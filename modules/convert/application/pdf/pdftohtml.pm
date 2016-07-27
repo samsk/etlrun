@@ -16,6 +16,7 @@ use IPC::Open2;
 use core;
 use core::log;
 use core::xml;
+use core::convert;
 
 sub parse($$)
 {
@@ -53,6 +54,25 @@ sub parse($$)
 		msg => $msg 
 	})
 		if(!$doc);
+
+	# post-process to make table matching ops easier
+	my @pages = core::findnodes($doc, '//page');
+	foreach my $page (@pages) {
+		my $page_num = $page->getAttribute('number') || 0;
+
+		my @nodes = core::findnodes($page, 'text');
+		my $pos = 1;
+		foreach my $node (@nodes) {
+			my $top = $node->getAttribute('top');
+
+			my $y = ($page_num * 100000) + $top;
+			my $p = ($page_num * 100000) + $pos++;
+			$node->setAttributeNS($core::convert::NAMESPACE_URL, $core::convert::MODULE . ':y', $y);
+			$node->setAttributeNS($core::convert::NAMESPACE_URL, $core::convert::MODULE . ':p', $p);
+		}
+	}
+	$doc->documentElement()->setAttributeNS($core::convert::NAMESPACE_URL, $core::convert::MODULE . ':convert-hint', 1)
+		if (@pages);
 
 	# return data
 	return ($doc);

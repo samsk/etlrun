@@ -19,7 +19,7 @@ use core::xml;
 use core::convert;
 
 our $CONF = {
-	plugin		=> core::conf::get('convert.text.pdf.plugin', 'pdf2htmlEX'),
+	plugin		=> core::conf::get('convert.text.pdf.plugin', 'pdftohtml'),
 };
 
 

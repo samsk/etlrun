@@ -29,14 +29,14 @@ sub process($$$%)
 
 	# get location
 	my ($data, $mime);
-	if (ref($req) eq 'url')
-	{
+	if (ref($req) eq 'url') {
 		$data = $req->{loc};
+		## /<mime_enc>/<url>
 		$mime = $2
 			if ($data =~ s/^\/((\w{0,20})\/)?//o);
 	}
-	else
-	{
+	else {
+		## /data/@mime_enc
 		$mime = $req->getAttribute(core::ATTR_MIME_ENCODING);
 
 		# got XML request

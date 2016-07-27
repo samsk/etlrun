@@ -282,6 +282,23 @@ sub _xsl_getenv($;$)
 	return (exists($ENV{$var}) && defined($ENV{$var})) ? $ENV{$var} : ($def || '');
 }
 
+# lc
+sub _xsl_lc($)
+{
+	my ($str) = @_;
+
+	return lc($str);
+}
+
+# uc
+sub _xsl_uc($)
+{
+	my ($str) = @_;
+
+	return uc($str);
+}
+
+
 # add default functions
 @FUNCTION_MAP_def = (
 	## FUNCTION etl:str2xml($string): $node-set
@@ -302,6 +319,11 @@ sub _xsl_getenv($;$)
 	{ ns => core::NAMESPACE_URL,	name => 'sleep',	handle => \&_xsl_sleep },
 	## FUNCTION etl:getenv($name, [, $default ]): $string
 	{ ns => core::NAMESPACE_URL,	name => 'getenv',	handle => \&_xsl_getenv },
+	## FUNCTION etl:lc($name): $string
+	{ ns => core::NAMESPACE_URL,	name => 'lc',		handle => \&_xsl_lc },
+	## FUNCTION etl:uc($name): $string
+	{ ns => core::NAMESPACE_URL,	name => 'uc',		handle => \&_xsl_uc },
+
 );
 @FUNCTION_MAP = @FUNCTION_MAP_def;
 

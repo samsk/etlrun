@@ -17,7 +17,6 @@ use Data::Dumper;
 use constant NAMESPACE			=> 'etl';
 use constant NAMESPACE_BASE_URL		=> 'http://etl.dob.sk';
 use constant NAMESPACE_URL		=> NAMESPACE_BASE_URL . '/etl';
-use constant NAMESPACE_DRIVER_URL	=> NAMESPACE_URL . '/driver';
 use constant UNKNOWN_MIME		=> 'unknown';
 use constant NULL_URL			=> '???';
 use constant CT_OK			=> 'etl/ok';
@@ -131,7 +130,7 @@ sub raise_error($$$;%)
 	$node->setAttributeNS(core::NAMESPACE_URL, 'reqid', $reqid);
 	$node->setAttributeNS(core::NAMESPACE_URL, core::ATTR_DRIVER, $module);
 	$node->setAttributeNS(core::NAMESPACE_URL, 'code', $code);
-	$node->setAttributeNS(core::NAMESPACE_URL, core::ATTR_NOREFETCH, 1);
+	$node->setAttributeNS(core::NAMESPACE_URL, core::ATTR_NOEXEC, 1);
 	$node->setAttributeNS(core::NAMESPACE_URL, core::ATTR_NOCACHE, 1);
 	$node->setAttributeNS(core::NAMESPACE_URL, 'source', $cal[1] . ':' . $cal[2])
 		if(@cal);
@@ -464,7 +463,10 @@ sub del_attrib($$;$)
 # get_error($document)
 sub get_error($)
 {
-	return get_xpath_ctx($_[0])->findnodes(core::NAMESPACE . ':data/' . core::NAMESPACE . ':err');
+	my (@list) = get_xpath_ctx($_[0])->findnodes(core::NAMESPACE . ':data/'
+		. core::NAMESPACE . ':err'
+		. (wantarray ? '' : '[1]'));
+	return (wantarray ? @list : $list[0]);
 }
 
 # is_static($node)

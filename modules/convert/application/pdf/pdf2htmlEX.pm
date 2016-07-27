@@ -67,18 +67,37 @@ sub parse($$;$)
 	}
 
 	# post-process to make table matching ops easier
-	my @nodes = core::findnodes($doc, '//xhtml:div[starts-with(@class, \'c\') and contains(@class, \' y\')]',
+	my @nodes = core::findnodes($doc, '//xhtml:div[contains(@class, \' y\')]',
 				xhtml => 'http://www.w3.org/1999/xhtml');
+	my ($y_node, $y_pos, @y_cols);
 	foreach my $node (@nodes) {
 		my $class = $node->getAttribute('class');
 		next
 			if (!$class);
 
 		my @classes = split(/\s+/o, $class);
-		my ($class_x, $class_y) = sort(grep({ $_ =~ /^[yx]/o } @classes));
+		my ($x, $y) = sort(grep({ $_ =~ /^[yx]/o } @classes));
+		$x = hex(substr($x, 1));
+		$y = hex(substr($y, 1));
 
-		$node->setAttribute('y', $class_y);
-		$node->setAttribute('x', $class_x);
+		$node->setAttributeNS($core::convert::NAMESPACE_URL, $core::convert::MODULE . ':y', $y);
+		$node->setAttributeNS($core::convert::NAMESPACE_URL, $core::convert::MODULE . ':x', $x);
+
+		if (!$y_pos || ($y_pos ne $y)) {
+		 	if ($y_node) {
+				$y_node->setAttributeNS($core::convert::NAMESPACE_URL, $core::convert::MODULE . ':y-col', join(':', @y_cols));
+				$y_node->setAttributeNS($core::convert::NAMESPACE_URL, $core::convert::MODULE . ':y-cols', $#y_cols + 1);
+			}
+			$y_pos = $y;
+			$y_node = $node;
+			@y_cols = ();
+		}
+		push(@y_cols, $x);
+	}
+	if ($y_node) {
+		$y_node->setAttributeNS($core::convert::NAMESPACE_URL, $core::convert::MODULE . ':y-col', join(':', @y_cols));
+		$y_node->setAttributeNS($core::convert::NAMESPACE_URL, $core::convert::MODULE . ':y-cols', $#y_cols + 1);
+		$doc->documentElement()->setAttributeNS($core::convert::NAMESPACE_URL, $core::convert::MODULE . ':convert-hint', 1);
 	}
 
 	# return data

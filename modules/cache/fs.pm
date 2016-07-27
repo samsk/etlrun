@@ -252,6 +252,7 @@ sub init()
 	$CACHE_DIR = core::conf::get('cache.fs.dir', 'etlcache');
 
 	# use env
+	## ENV/$CACHE_ROOT
 	if (!defined($CACHE_ROOT) && exists($ENV{'ETL_CACHE_FS_ROOT'})) {
 		$CACHE_ROOT = $ENV{'ETL_CACHE_FS_ROOT'};
 	}

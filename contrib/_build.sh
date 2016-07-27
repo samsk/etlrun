@@ -19,10 +19,13 @@ PERL_MODULES="Try::Tiny Canary::Stability
  DBD::Pg DBD::SQLite
  HTML::Selector::XPath
  Redis
- CAM::PDF
  +Scalar::Util
  Sub::Name
- XML::LibXML::Devel::SetLineNumber"
+ XML::LibXML::Devel::SetLineNumber
+ DBI
+ DBD::Pg
+ DBD::SQLite
+ DBD::mysql"
 
 # config
 set -u;

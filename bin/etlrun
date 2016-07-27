@@ -56,7 +56,7 @@ sub _print_out($$$)
 	else
 	{
 		print '<?xml version="1.0" encoding="utf-8"?>' . "\n";
-		print $outfh $doc->toString($format);
+		print $outfh $doc->toString($format ? 2 : 0);
 	}
 }
 
