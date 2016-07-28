@@ -63,7 +63,7 @@ sub process($$$%)
 	}
 
 	# get req node
-	my $req_node = core::get_data_request($req, $NAMESPACE_URL);
+	my $req_node = core::get_data_request($req, $NAMESPACE_URL, $req->localName());
 	die(__PACKAGE__ . ": request node not found")
 		if (!$req_node);
 
@@ -91,7 +91,7 @@ sub process($$$%)
 		my $uri = core::get_uri($resp2);
 
 		$resp2 = undef;
-		my $resp4 = $resp3->documentElement();
+		my $resp4 = core::xml::isDocument($resp3) ? $resp3->documentElement() : undef;
 		if (defined($resp4))
 		{	core::xml::moveNode($nod, $resp4);	}
 		else

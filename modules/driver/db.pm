@@ -77,7 +77,7 @@ sub _dmlquery($$$$)
 
 	# default DSN
 	## /dml/@dsn
-	my $dsn = core::xml::attrib($req, 'dsn', $NAMESPACE_URL) || $dsn_def;
+	my $dsn = core::xml::attrib($req, 'dsn', $NAMESPACE_URL);
 	if (!$dsn)
 	{
 		$resp->addChild(core::raise_error($reqid, $MODULE, 400,
@@ -89,14 +89,14 @@ sub _dmlquery($$$$)
 
 	## /dml/@dsn == 'reuse'
 	## /dml/@dsn == 'reuse:ID'
-	if ($dsn =~ /^reuse(:([\w-]))?$/o)
+	if ($dsn =~ /^reuse(:([\w-]+))?$/o)
 	{
 		my $id = $2;
 
 		my $key = 'driver.db.dsn';
 		$key .= '.' . $id
 			if ($id);
-		
+
 		$dsn = core::conf::get($key);
 		if (!defined($dsn)) {
 			$resp->addChild(core::raise_error($reqid, $MODULE, 412,
@@ -387,10 +387,40 @@ sub _compile($$$$$\$%)
 			## /dml/prepare/@once
 			my $once = core::xml::attrib($node, 'once', $NAMESPACE_URL);
 
+			## /dml/prepare/@ro
+			my $ro = core::xml::attrib($node, 'ro', $NAMESPACE_URL);
+
+			## /dml/prepare/@duplicate_params
+			my $dup_params = core::xml::attrib($node, 'duplicate-params', $NAMESPACE_URL);
+
+			## /dml/prepare/@returning
+			my $returning = core::xml::attrib($node, 'returning', $NAMESPACE_URL);
+			if ($returning) {
+				if (!exists($prepared{$returning})) {
+					$resp->addChild(core::raise_error($reqid, $MODULE, 400,
+						_fatal => $resp,
+						req => $node,
+						returning => $returning,
+						msg => "statement given for returning not (yet) prepared"));
+					return undef;
+				}
+				if (!$prepared{$returning}->{'ro'}) {
+					$resp->addChild(core::raise_error($reqid, $MODULE, 400,
+						_fatal => $resp,
+						req => $node,
+						returning => $returning,
+						msg => "statement given for returning is not defined as readonly (\@ro)"));
+					return undef;
+				}
+			}
+
 			my $instr;
 			push(@program, $instr = {
 					'op' => 'prepare',
 					'once' => $once,
+					'ro' => $ro,
+					'returning' => $returning,
+					'duplicate' => $dup_params,
 					'name' => $name,
 					'sql' => $sql,
 					'dsn' => $ctx->{'dsn'},
@@ -475,6 +505,8 @@ sub _compile($$$$$\$%)
 					'store'  => $store,
 					'debug' => $debug,
 					'prepare' => $prepared{$name},
+					'returning' => defined($prepared{$name}->{'returning'}) ? $prepared{$prepared{$name}->{'returning'}} : undef,
+					'duplicate' => $prepared{$name}->{'duplicate'},
 				});
 		}
 		#query statment
@@ -652,7 +684,7 @@ sub _storevar($$$$\%$)
 	$hash->{-name} = $res->{NAME_lc};
 
 	$opts->{'-vars'}->{$varname} = $hash;
-	return 1;
+	return (keys(%$hash) > 1);
 }
 
 sub _build_params($\%)
@@ -807,13 +839,18 @@ sub _execute_it($$$$$%)
 			my $sth = $instr->{'prepare'}->{-sth};
 			my $csth = $instr->{'prepare'}->{-csth};
 			my $debug = $instr->{'debug'};
+			my $returning = $instr->{'returning'};
+			my $duplicate = $instr->{'duplicate'};
 
 			# check once
 			next
 				if ($once && $csth->{-done});
 
 			# build pars
-			my @pars = _build_params($instr->{'params'}, %opts);
+			my (@pars, @pars2);
+			@pars = @pars2 = _build_params($instr->{'params'}, %opts);
+			@pars = (@pars, @pars)
+				if ($duplicate);
 
 			core::log::PKG_MSG(LOG_INFO, "- executing '%s' %s" . ($debug ? " %s" : ''),
 				$name, $id || '', ($debug ? Dumper(\@pars) : ''));
@@ -834,9 +871,16 @@ sub _execute_it($$$$$%)
 			}
 			elsif ($store)
 			{
-				# doesnt works with iterator
+				# doesn't works with iterator
 				$csth->{-active} = 0;
-				$ret = (_storevar($dbh, $sth, $name, $id, %opts, $store) == 1);
+				my $got = _storevar($dbh, $sth, $name, $id, %opts, $store);
+
+				# need to return smth
+				if (!$got && $returning) {
+					$returning->{-sth}->execute(@pars2);
+					_storevar($dbh, $returning->{-sth}, $name, $id, %opts, $store);
+				}
+				$ret = 1;
 			}
 			elsif ($xmlout)
 			{

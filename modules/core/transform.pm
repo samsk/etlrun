@@ -88,7 +88,7 @@ sub apply($$$$\%%)
 	my ($reqid, $req_doc, $doc, $url, $params, %params) = @_;
 
 	# parse req
-	if ($url !~ /^(\w+):(.+?)$/o)
+	if ($url !~ /^(\w+):(.*?)$/o)
 	{
 		my ($resp, $nod) = core::create_response($reqid, __PACKAGE__);
 		$nod->addChild(core::raise_error($reqid, __PACKAGE__, 400,
@@ -100,7 +100,7 @@ sub apply($$$$\%%)
 	}
 
 	my $driver;
-	($driver, $url) = ($1, $2);
+	($driver, $url) = ($1, $2 || '');
 
 	# init if needed
 	if (!exists($INIT_MAP{$driver}) || $INIT_MAP{$driver} < core::conf::FLAG_RELOAD_TIME())

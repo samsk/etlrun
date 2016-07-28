@@ -414,11 +414,11 @@ sub get_data_content($;$$)
 	return wantarray ? ($cont, $data) : $cont;
 }
 
-# get_data_request($node [, $namespace ])
-#	select request element (not having given namespace)
-sub get_data_request($;$)
+# get_data_request($node, $namespace [, $localName ])
+#	select request element (not having given $namespace but maybe having given $localName)
+sub get_data_request($$;$)
 {
-	my ($node, $namespace) = @_;
+	my ($node, $namespace, $localName) = @_;
 
 	my $nc = $node->firstChild();
 	return undef
@@ -427,7 +427,8 @@ sub get_data_request($;$)
 	my $req = $nc;
 	while(defined($req)
 		&& ($req->nodeType() != XML_ELEMENT_NODE
-			|| ($req->namespaceURI() && $req->namespaceURI() eq $namespace)))
+			|| (($req->namespaceURI() && $req->namespaceURI() eq $namespace)
+				&& (!defined($localName) || $localName ne $req->localName()))))
 	{
 		$req = $req->nextSibling();
 	}
