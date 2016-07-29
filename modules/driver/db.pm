@@ -800,7 +800,7 @@ sub _execute_it($$$$$%)
 			# prepare stmt if not alread cached
 			if (!$$csth || $$csth->{-active})
 			{
-				core::log::PKG_MSG(LOG_NOTICE, " preparing '%s'", $name);
+				core::log::PKG_MSG(LOG_NOTICE, " - preparing '%s'", $name);
 
 				# NOTE: prepare si also critical operation, but it wont fail (DBI problem) !
 				$instr->{-sth} = eval { $dbh->prepare($sql) };
@@ -852,7 +852,7 @@ sub _execute_it($$$$$%)
 			@pars = (@pars, @pars)
 				if ($duplicate);
 
-			core::log::PKG_MSG(LOG_INFO, "- executing '%s' %s" . ($debug ? " %s" : ''),
+			core::log::PKG_MSG(LOG_INFO, " - executing '%s' %s" . ($debug ? " %s" : ''),
 				$name, $id || '', ($debug ? Dumper(\@pars) : ''));
 
 			my $ret = 1;

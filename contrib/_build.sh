@@ -4,7 +4,8 @@ AN=`readlink -f "$0"`
 DN=`dirname "$AN"`;
 SRCDIR="$DN/_source";
 GIT_LIBS="https://github.com/htacg/tidy-html5"
-PERL_MODULES="Try::Tiny Canary::Stability
+PERL_MODULES="
+ Try::Tiny Canary::Stability common::sense
  JSON JSON::XS JSON::Parse
  XML::SAX XML::SAX::Base XML::LibXML XML::LibXSLT
  IO::HTML HTML::HTML5::Entities HTML::HTML5::Parser
@@ -25,7 +26,8 @@ PERL_MODULES="Try::Tiny Canary::Stability
  DBI
  DBD::Pg
  DBD::SQLite
- DBD::mysql"
+ DBD::mysql
+ Types::Serialiser"
 
 # config
 set -u;
