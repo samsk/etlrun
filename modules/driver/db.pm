@@ -13,6 +13,7 @@ use Encode qw(encode_utf8 decode_utf8 is_utf8);
 use DBI qw(data_string_desc);
 use Data::Dumper;
 use XML::LibXML;
+use Pg::hstore;	#FIXME: this should be optional load
 
 #internal
 use core;
@@ -32,6 +33,9 @@ our $NAMESPACE_URL_RESULT  = $NAMESPACE_URL . '/result';
 my ($CACHE, %ITERATOR);
 END { $CACHE = {}; undef $CACHE;
 	%ITERATOR =(); undef %ITERATOR; }
+
+## decode types
+my @DECODE_TYPE = ('hstore', 'xml');
 
 # process
 sub process($$$%)
@@ -156,6 +160,7 @@ RECONNECT:
 	$db->{AutoCommit} = 1;
 
 	# compile our program
+	# FIXME: cache program to avoid recompilations (use @etl:uuid)
 	my $program;
 	if (!$params
 		|| !exists($params->{-iterator}) || !defined($params->{-iterator})
@@ -274,7 +279,13 @@ sub _compile($$$$$\$%)
 	while(defined($node))
 	{
 		# skip non-interesting
-		goto NEXT_NODE if ($node->nodeType() != XML_ELEMENT_NODE);
+		#	or not our namespace
+		goto NEXT_NODE
+			if ($node->nodeType() != XML_ELEMENT_NODE
+				|| $node->namespaceURI() ne $NAMESPACE_URL);
+
+		# element name
+		my $lname = $node->localName();
 
 		# node specifics
 		## /dml/@ignore
@@ -288,7 +299,6 @@ sub _compile($$$$$\$%)
 
 		#transaction
 		## /dml/transaction
-		my $lname = $node->localName();
 		if ($lname eq 'transaction' && $node->hasChildNodes())
 		{
 			## /dml/transaction/@name
@@ -414,6 +424,51 @@ sub _compile($$$$$\$%)
 				}
 			}
 
+			## /dml/prepare/decode
+			my %decode;
+			my @decode_nodes = core::findnodes($node, $MODULE . ':decode', $MODULE => $NAMESPACE_URL);
+			foreach my $nod (@decode_nodes) {
+				my $field = core::xml::attrib($nod, 'field', $NAMESPACE_URL);
+				if (!defined($field)) {
+					$resp->addChild(core::raise_error($reqid, $MODULE, 400,
+						_fatal => $resp,
+						req => $nod,
+						msg => "decode without specified without field name (\@field)"));
+					return undef;
+				}
+				if (exists($decode{$field})) {
+					$resp->addChild(core::raise_error($reqid, $MODULE, 400,
+						_fatal => $resp,
+						req => $nod,
+						field => $field,
+						msg => "multiple decode of one field not allowed"));
+					return undef;
+				}
+
+				my $type = core::xml::attrib($nod, 'type', $NAMESPACE_URL);
+				if (!defined($field)) {
+					$resp->addChild(core::raise_error($reqid, $MODULE, 400,
+						_fatal => $resp,
+						req => $nod,
+						msg => "decode without specified without type (\@type)"));
+					return undef;
+				}
+
+				if (!grep({ $_ eq lc($type) } @DECODE_TYPE)) {
+					$resp->addChild(core::raise_error($reqid, $MODULE, 400,
+						_fatal => $resp,
+						req => $nod,
+						type => $type,
+						supported => \@DECODE_TYPE,
+						msg => "decode type not (yet) supported"));
+					return undef;
+				}
+
+				$decode{$field} = {
+					'type' => lc($type),
+				};
+			}
+
 			my $instr;
 			push(@program, $instr = {
 					'op' => 'prepare',
@@ -424,6 +479,7 @@ sub _compile($$$$$\$%)
 					'name' => $name,
 					'sql' => $sql,
 					'dsn' => $ctx->{'dsn'},
+					'decode' => \%decode,
 				});
 			$prepared{$name} = $instr;
 		}
@@ -506,6 +562,7 @@ sub _compile($$$$$\$%)
 					'debug' => $debug,
 					'prepare' => $prepared{$name},
 					'returning' => defined($prepared{$name}->{'returning'}) ? $prepared{$prepared{$name}->{'returning'}} : undef,
+					'decode' => defined($prepared{$name}->{'decode'}) ? $prepared{$name}->{'decode'} : undef,
 					'duplicate' => $prepared{$name}->{'duplicate'},
 				});
 		}
@@ -582,9 +639,64 @@ NEXT_NODE:
 	return \@program;
 }
 
-sub _xmlreply($$$$$;$)
+sub _xmlreply_decode($$) {
+	my ($decode, $val) = @_;
+	my $type = $decode->{'type'};
+
+	if ($type =~ /^(pg:)?hstore$/o) {
+		$val = Pg::hstore::decode($val);
+	} elsif ($type eq 'xml') {
+		my $doc = eval { core::xml::parse($val); };
+
+		if ($doc) {
+			$val = $doc->documentElement();
+		}
+	}
+	return $val;
+}
+
+sub _xmlreply_value($$$$$) {
+	my ($resp, $node, $name, $value, $decode) = @_;
+
+	$value = _xmlreply_decode($decode->{$name}, $value)
+		if ($decode && exists($decode->{$name}));
+
+	my $r = ref($value);
+	if (!$r) {
+		my $node2 = $resp->ownerDocument()->createElement($name);
+
+		if (defined($value) && $value ne '') {
+			if (!core::xml::needsCDATA($value)) {
+				$node2->appendText($value);
+			} else {
+				$node2->addChild(new XML::LibXML::CDATASection($value));
+			}	
+		}
+		$node->addChild($node2);
+	} elsif ($r eq 'ARRAY') {
+		foreach my $val (@$value) {
+			&_xmlreply_value($resp, $node, $name, $val);
+		} 
+	} elsif ($r eq 'HASH') {
+		my $node2 = $resp->ownerDocument()->createElement($name);
+
+		foreach my $key (keys(%$value)) {
+			&_xmlreply_value($resp, $node2, $key, $value->{$key});
+		}
+		$node->addChild($node2);
+	} elsif (core::xml::isXML($value)) {
+		my $node2 = $resp->ownerDocument()->createElement($name);
+
+		$node2->addChild($value);
+		$node->addChild($node2);
+	}
+
+	return 1;
+}
+
+sub _xmlreply($$$$$$;$)
 {
-	my ($resp, $dbh, $res, $name, $params, $id) = @_;
+	my ($resp, $dbh, $res, $decode, $name, $params, $id) = @_;
 
 	# limit support
 	my $limit;
@@ -595,8 +707,7 @@ sub _xmlreply($$$$$;$)
 	my $fields = $res->{NUM_OF_FIELDS} || 0;
 	my $cols = $res->{NAME_lc};
 
-	for(my $i = 0; $i < $fields; $i++)
-	{
+	for(my $i = 0; $i < $fields; $i++) {
 		$$cols[$i] =~ s/[^\w]/_/og;
 	}
 
@@ -611,19 +722,8 @@ sub _xmlreply($$$$$;$)
 		$node->setAttribute('id', $id)
 			if (defined($id));
 
-		for(my $i = 0; $i < $fields; $i++)
-		{
-			my $node2 = $resp->ownerDocument()->createElement($$cols[$i]);
-			if (defined($$arr[$i]) && $$arr[$i] ne '')
-			{
-				#FIXME: it should be possible to specify response encoding
-				#	and convert to utf8
-				if ($$arr[$i] =~ /^[[:alnum:][:space:]:\.\-_]+$/o)
-				{	$node2->appendText($$arr[$i]);	}
-				else
-				{	$node2->addChild(new XML::LibXML::CDATASection($$arr[$i]));	}
-			}
-			$node->addChild($node2);
+		for(my $i = 0; $i < $fields; $i++) {
+			_xmlreply_value($resp, $node, $$cols[$i], $$arr[$i], $decode);
 		}
 		$resp->addChild($node);
 	}
@@ -841,6 +941,7 @@ sub _execute_it($$$$$%)
 			my $debug = $instr->{'debug'};
 			my $returning = $instr->{'returning'};
 			my $duplicate = $instr->{'duplicate'};
+			my $decode= $instr->{'decode'};
 
 			# check once
 			next
@@ -877,6 +978,9 @@ sub _execute_it($$$$$%)
 
 				# need to return smth
 				if (!$got && $returning) {
+					core::log::PKG_MSG(LOG_DETAIL, " - executing returning '%s' %s" . ($debug ? " %s" : ''),
+						$name, $id || '', ($debug ? Dumper(\@pars2) : ''));
+
 					$returning->{-sth}->execute(@pars2);
 					_storevar($dbh, $returning->{-sth}, $name, $id, %opts, $store);
 				}
@@ -885,7 +989,7 @@ sub _execute_it($$$$$%)
 			elsif ($xmlout)
 			{
 				$csth->{-active} = 1;
-				$ret = (_xmlreply($resp, $dbh, $sth, $name, $params, $id) == 1);
+				$ret = (_xmlreply($resp, $dbh, $sth, $decode, $name, $params, $id) == 1);
 			}
 
 			# release sth

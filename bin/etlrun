@@ -106,9 +106,11 @@ sub main(@)
 	if($url !~ /[\r\n]/o && -e $url)
 	{
 		my $dn = dirname($url);
+		my $nochdir = ($url =~ s/^.\///og);
 
 		# need to change dir for app:file-path to work - FIXME: correct this !
-		chdir($dn) || die("$0: failed to change dir to '$dn' - $!\n");
+		chdir($dn) || die("$0: failed to change dir to '$dn' - $!\n")
+			if (!$nochdir);
 
 		$dn = File::Spec->rel2abs($dn);
 

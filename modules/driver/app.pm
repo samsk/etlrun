@@ -31,11 +31,14 @@ sub _config($$)
 	foreach my $node (@nodes) {
 		## app:config/conf/@name
 		my $name = core::xml::attrib($node, 'name', undef);
+		## app:config/conf/@force
+		my $force = core::xml::attrib($node, 'force', undef);
 
 		die(__PACKAGE__ . " - no attribute \@name on conf definition")
 			if (!defined($name) || $name eq '');
 
-		core::conf::set($name, core::xml::nodeValue($node));
+		core::conf::set($name, core::xml::nodeValue($node))
+			if ($force || !defined(core::conf::get($name)));
 	}
 
 	## app:config/var

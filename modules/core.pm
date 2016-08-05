@@ -149,8 +149,7 @@ sub raise_error($$$;%)
 		}
 
 		# add element
-		my $n = new XML::LibXML::Element($key);
-		$n->setNamespace(core::NAMESPACE_URL, core::NAMESPACE, 1);
+		my $n = new XML::LibXML::Element(core::NAMESPACE . ':' . $key);
 		if($sref eq 'XML::LibXML::Error')
 		{
 			my $str = $params{$key}->dump();

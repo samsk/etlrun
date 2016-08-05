@@ -25,6 +25,7 @@ PERL_MODULES="
  XML::LibXML::Devel::SetLineNumber
  DBI
  DBD::Pg
+ Pg::hstore
  DBD::SQLite
  DBD::mysql
  Types::Serialiser"

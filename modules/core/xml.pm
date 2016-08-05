@@ -166,6 +166,7 @@ sub needsCDATA(\$)
 {
 	my ($str) = @_;
 
+	#/^[[:alnum:][:space:]:\.\-_]+$/o
 	return ($$str && $$str =~ /[\&\<\>\"\']/o);
 }
 

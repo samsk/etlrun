@@ -104,7 +104,7 @@ sub process($$$%)
 	my $prefix 	= core::xml::attrib($req, 'prefix', $NAMESPACE_URL, '');
 	## @postfix
 	my $postfix 	= core::xml::attrib($req, 'postfix', $NAMESPACE_URL, '');
-	## @filename
+	## @file
 	my $filename	= core::xml::attrib($req, 'file', $NAMESPACE_URL);
 	## @mkdir
 	my $mkdirs	= core::xml::attrib($req, 'mkdir', $NAMESPACE_URL);
@@ -151,7 +151,7 @@ sub process($$$%)
 				if ($child->nodeType != XML_ELEMENT_NODE);
 			$elem_pos++;
 
-			## */@filename
+			## */@file
 			$filename	= core::xml::attrib($child, 'file', $NAMESPACE_URL);
 
 			if (!defined($filename))
