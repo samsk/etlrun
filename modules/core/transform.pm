@@ -10,6 +10,7 @@ use strict;
 use warnings;
 
 use Data::Dumper;
+use Scalar::Util;
 
 # internal
 use core;
@@ -196,13 +197,76 @@ sub _xsl_xml2str($)
 	return $ret;
 }
 
-# regex
+sub __xsl_regex_compile($)
+{
+	my ($m) = @_;
+
+	local $2;
+	my $x = eval { qr/$m/; };
+
+	return ($x, ($@ ? "REGEX[$m]: $@" : undef));
+}
+
+# regex_match
+sub _xsl_regex_match($$)
+{
+	my ($str, $m) = @_;
+	
+	my ($x, $e) = __xsl_regex_compile($m);
+	return $e
+		if ($e);
+
+	return ($str =~ /$x/);
+}
+
+# regex_match_substr
+sub _xsl_regex_match_substr($$$)
+{
+	my ($str, $m, $p) = @_;
+
+	my ($x, $e) = __xsl_regex_compile($m);
+	return $e
+		if ($e);
+
+	$p = 1
+		if (!$p || !Scalar::Util::looks_like_number($p) || $p < 1);
+
+	my @ret = ( $str =~ m/$x/g );
+	return $ret[$p - 1];
+}
+
+
+# regex_replace
 sub _xsl_regex_replace($$$;$)
 {
-	my ($str, $m, $r, $o) = ($_[0], $_[1], $_[2] || '', $_[3] || '');
+	my ($str, $m, $r, $o, $a) = ($_[0], $_[1], $_[2] || '', $_[3]);
 
-	eval "\$str =~ s!$m!$r!$o";
+	my ($x, $e) = __xsl_regex_compile($m);
+	return $e
+		if ($e);
+
+	if ($a) {
+		$str =~ s/$x/$m/g;
+	} else {
+		$str =~ s/$x/$m/;
+	}
 	return $str;
+}
+
+# regex_split
+sub _xsl_regex_split($$;$)
+{
+	my ($str, $m, $l) = @_;
+
+	my ($x, $e) = __xsl_regex_compile($m);
+	return $e
+		if ($e);
+
+	$l = 0
+		if (!$l || !Scalar::Util::looks_like_number($l));
+
+	my @nodes = map({ XML::LibXML::Text->new( $_ ) } split($x, $str, $l));
+	return XML::LibXML::NodeList->new(@nodes);
 }
 
 # seq
@@ -230,8 +294,7 @@ sub _xsl_seq($;$$)
 
 	# create nodes
 	my @nodes;
-	for (; $first <= $last; $first += $inc)
-	{
+	for (; $first <= $last; $first += $inc) {
 		push(@nodes, XML::LibXML::Text->new( $first ));
 	}
 	return XML::LibXML::NodeList->new(@nodes);
@@ -305,8 +368,14 @@ sub _xsl_uc($)
 	{ ns => core::NAMESPACE_URL,	name => 'str2xml',	handle => \&_xsl_str2xml },
 	## FUNCTION etl:xml2str($node-set): $string
 	{ ns => core::NAMESPACE_URL,	name => 'xml2str',	handle =>\&_xsl_xml2str },
-	## FUNCTION etl:regex-replace($match, $replace, $regex_opts): $string
+	## FUNCTION etl:regex-match($string, $match): $string
+	{ ns => core::NAMESPACE_URL,	name =>'regex-match', handle => \&_xsl_regex_match },
+	## FUNCTION etl:regex-match-substr($string, $position, $match): $string
+	{ ns => core::NAMESPACE_URL,	name =>'regex-match-substr', handle => \&_xsl_regex_match_substr },
+	## FUNCTION etl:regex-replace($string, $match, $replace): $string
 	{ ns => core::NAMESPACE_URL,	name =>'regex-replace', handle => \&_xsl_regex_replace },
+	## FUNCTION etl:regex-replace($string, $match, $limit): $string
+	{ ns => core::NAMESPACE_URL,	name =>'regex-split', handle => \&_xsl_regex_split },
 	## FUNCTION etl:seq($first [ [ ,$inc ], $last): $node-set
 	{ ns => core::NAMESPACE_URL,	name => 'seq',		handle => \&_xsl_seq },
 	## FUNCTION etl:env($environment_variable_name): $string

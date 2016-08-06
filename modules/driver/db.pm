@@ -962,13 +962,14 @@ sub _execute_it($$$$$%)
 				&& (!defined($ignore) || $sth->errstr !~ /$ignore/))
 			{
 				return (undef, core::raise_error($reqid, $MODULE, 500,
-					#_fatal => $resp,
-					instr => $instr,
-					error => $dbh->errstr,
-					name => $name,
-					id => $id,
-					params => $params,
-					msg => "failed to execute prepared statement"));
+						#_fatal => $resp,
+						instr => $instr,
+						error => $dbh->errstr,
+						name => $name,
+						id => $id,
+						values => \@pars,
+						params => $params,
+						msg => "failed to execute prepared statement"));
 			}
 			elsif ($store)
 			{
@@ -1022,14 +1023,19 @@ sub _execute($$$$$%)
 		{
 			$err->setNamespace($NAMESPACE_URL_RESULT, $MODULE_RESULT)
 				if (!core::conf::get('driver.db.isolate.nomask', 0));
-			if (!core::conf::get('driver.db.isolate.verbose', 0))
+			if (!core::conf::get('driver.db.isolate.verbose', 0)
+				&& core::log::level() < LOG_NOTICE)
 			{
 				# reduce information set
 				my %allowed = ( 'name' => undef, 'error' => undef, 'id' => undef );
 				foreach my $child ($err->nonBlankChildNodes())
 				{
-					$child->unbindNode()
-						if (!exists($allowed{$child->localName()}));
+					if (!exists($allowed{$child->localName()})) {
+						$child->unbindNode();
+					} else {
+						$child->setAttribute('isolated', 1);
+					}
+						
 				}
 			}
 			$resp->addChild($err);
