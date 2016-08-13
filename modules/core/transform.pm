@@ -239,18 +239,45 @@ sub _xsl_regex_match_substr($$$)
 # regex_replace
 sub _xsl_regex_replace($$$;$)
 {
-	my ($str, $m, $r, $o, $a) = ($_[0], $_[1], $_[2] || '', $_[3]);
+	my ($str, $m, $r, $a) = @_;
 
 	my ($x, $e) = __xsl_regex_compile($m);
 	return $e
 		if ($e);
+	
+	if (!defined($r)) {
+		$r = '\'\'';
+	} else {
+		my $rr = '\'';
+
+		# safe eval
+		my @arr = split(/\$/o, $r);
+		for(my $ii = 0; $ii <= $#arr; $ii++) {
+			if ($arr[$ii] =~ s/^(([[:digit:]]{1,2})|{([[:digit:]]{1,2})})//o) {
+				$rr .= '\' . "$' . $1 . '" . \'';
+			}
+			$rr .= $arr[$ii];
+		}
+
+		$rr .= '\'';
+		$r = $rr;
+	}
 
 	if ($a) {
-		$str =~ s/$x/$m/g;
+		no warnings;
+		$str =~ s/$x/$r/eeg;
 	} else {
-		$str =~ s/$x/$m/;
+		no warnings;
+		$str =~ s/$x/$r/ee;
 	}
 	return $str;
+}
+
+# regex_replace_all
+sub _xsl_regex_replace_all($$$)
+{
+	$_[3] = 1;
+	return &_xsl_regex_replace(@_);
 }
 
 # regex_split
@@ -372,9 +399,11 @@ sub _xsl_uc($)
 	{ ns => core::NAMESPACE_URL,	name =>'regex-match', handle => \&_xsl_regex_match },
 	## FUNCTION etl:regex-match-substr($string, $position, $match): $string
 	{ ns => core::NAMESPACE_URL,	name =>'regex-match-substr', handle => \&_xsl_regex_match_substr },
-	## FUNCTION etl:regex-replace($string, $match, $replace): $string
+	## FUNCTION etl:regex-replace($string, $match, $replace, $all): $string
 	{ ns => core::NAMESPACE_URL,	name =>'regex-replace', handle => \&_xsl_regex_replace },
-	## FUNCTION etl:regex-replace($string, $match, $limit): $string
+	## FUNCTION etl:regex-replace-all($string, $match, $replace): $string
+	{ ns => core::NAMESPACE_URL,	name =>'regex-replace-all', handle => \&_xsl_regex_replace_all },
+	## FUNCTION etl:regex-split($string, $match, $limit): $node-set
 	{ ns => core::NAMESPACE_URL,	name =>'regex-split', handle => \&_xsl_regex_split },
 	## FUNCTION etl:seq($first [ [ ,$inc ], $last): $node-set
 	{ ns => core::NAMESPACE_URL,	name => 'seq',		handle => \&_xsl_seq },
