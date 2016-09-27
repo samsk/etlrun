@@ -28,7 +28,9 @@ PERL_MODULES="
  Pg::hstore
  DBD::SQLite
  DBD::mysql
- Types::Serialiser"
+ Types::Serialiser
+ Text::Unidecode
+ Unicode::Normalize"
 
 # config
 set -u;

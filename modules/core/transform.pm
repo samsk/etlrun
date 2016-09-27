@@ -9,8 +9,11 @@ package core::transform;
 use strict;
 use warnings;
 
+use Encode;
 use Data::Dumper;
 use Scalar::Util;
+use Text::Unidecode;
+#use Unicode::Normalize;
 
 # internal
 use core;
@@ -388,6 +391,25 @@ sub _xsl_uc($)
 	return uc($str);
 }
 
+# _xsl_trim
+sub _xsl_trim($)
+{
+	my ($str) = @_;
+
+	$str =~ s/(^\s+|\s+$)//og;
+	return $str;
+}
+
+# _xsl_unaccent
+sub _xsl_unaccent($)
+{
+	my ($str) = @_;
+
+#	$str = NFKD($str);
+#	$str =~ s/\p{NonspacingMark}//og;
+#	return $str;
+	return unidecode($str);
+}
 
 # add default functions
 @FUNCTION_MAP_def = (
@@ -417,11 +439,14 @@ sub _xsl_uc($)
 	{ ns => core::NAMESPACE_URL,	name => 'sleep',	handle => \&_xsl_sleep },
 	## FUNCTION etl:getenv($name, [, $default ]): $string
 	{ ns => core::NAMESPACE_URL,	name => 'getenv',	handle => \&_xsl_getenv },
-	## FUNCTION etl:lc($name): $string
+	## FUNCTION etl:lc($string): $string
 	{ ns => core::NAMESPACE_URL,	name => 'lc',		handle => \&_xsl_lc },
-	## FUNCTION etl:uc($name): $string
+	## FUNCTION etl:uc($string): $string
 	{ ns => core::NAMESPACE_URL,	name => 'uc',		handle => \&_xsl_uc },
-
+	## FUNCTION etl:trim($string): $string
+	{ ns => core::NAMESPACE_URL,	name => 'trim',		handle => \&_xsl_trim },
+	## FUNCTION etl:unaccent($string): $string
+	{ ns => core::NAMESPACE_URL,	name => 'unaccent',	handle => \&_xsl_unaccent },
 );
 @FUNCTION_MAP = @FUNCTION_MAP_def;
 

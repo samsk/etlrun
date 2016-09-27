@@ -201,7 +201,7 @@ sub process($$$%)
 			msg => $res->{status},
 			content => (exists($res->{content}) && defined($res->{content})) ? 1 : 0,
 			content_binary => (exists($res->{content_binary}) && defined($res->{content_binary})) ? 1 : 0),
-			data => substr($res->{content_binary}, 0, 50));
+			data => substr($res->{content_binary} || '', 0, 50));
 		return ($resp, core::CT_ERROR);
 	}
 

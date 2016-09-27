@@ -25,7 +25,7 @@ sub process($$$%)
 	core::log::SYS_CALL("%s, <DOC>, 0x%p", $reqid, $req);
 
 	## @overwrite
-	my $overwrite = core::xml::attrib($req, 'timeout', $NAMESPACE_URL);
+	my $overwrite = core::xml::attrib($req, 'overwrite', $NAMESPACE_URL);
 
 	## @format
 	my $format = core::xml::attrib($req, 'format', $NAMESPACE_URL) || "%s - %s";
