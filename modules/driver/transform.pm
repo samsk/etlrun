@@ -101,7 +101,7 @@ sub process($$$%)
 
 			# possibly invalid transformation resulting in plain text document
 			my $text = $resp->createElementNS($NAMESPACE_RESULT_URL, $MODULE_RESULT . ':text');
-			$text->appendText($resp3->toString());
+			$text->appendText(core::xml::nodeValue($resp3));
 			$nod->addChild($text);
 		}
 
