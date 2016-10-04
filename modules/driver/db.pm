@@ -282,6 +282,7 @@ sub _compile($$$$$\$%)
 		#	or not our namespace
 		goto NEXT_NODE
 			if ($node->nodeType() != XML_ELEMENT_NODE
+				|| !$node->namespaceURI()
 				|| $node->namespaceURI() ne $NAMESPACE_URL);
 
 		# element name
