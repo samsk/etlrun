@@ -49,14 +49,13 @@ sub _print_out($$$)
 	my ($doc, $outfh, $format) = @_;
 
 	# print unformated to file
-	if(core::xml::isDocument($doc))
-	{
+	if(core::xml::isDocument($doc)) {
 		$doc->toFH($outfh, $format);
-	}
-	else
-	{
+	} elsif(ref($doc)) {
 		print '<?xml version="1.0" encoding="utf-8"?>' . "\n";
-		print $outfh $doc->toString($format ? 2 : 0);
+		syswrite($outfh, $doc->toString($format ? 2 : 0));
+	} else {
+		syswrite($outfh, $doc);
 	}
 }
 
@@ -72,6 +71,8 @@ sub main(@)
 	core::conf::file_path($bRoot . "/etc");
 	core::conf::data_path("/");
 
+	binmode(STDOUT, ':encoding(UTF-8)');
+
 	# parse command options
 	my $id = time();
 	my ($url, %params, $resp_file, $no_envelope, $no_output);
@@ -85,7 +86,8 @@ sub main(@)
 		"I|include-path=s"	=> sub { core::conf::data_path(File::Spec->rel2abs($_[1])); },
 		"nr|no-refetch"		=> sub { $params{-norefetch} = 1; },
 		"id=s"			=> \$id,
-		"oe|open-envelop"	=> \$no_envelope,
+		"oe|open-envelop+"	=> \$no_envelope,
+		"oex|open-envelop-extra"=> sub { $no_envelope = 99; },
 		"o|output=s"		=> \$resp_file,
 		"no-output"		=> \$no_output,
 		"<>"			=> sub {
@@ -143,8 +145,17 @@ sub main(@)
 	else
 	{
 		# remove envelope
-		$resp->setDocumentElement($resp->documentElement()->firstChild())
-			if($no_envelope && core::xml::isDocument($resp));
+		while($no_envelope-- > 0) {
+			if(ref($resp) && (core::xml::isDocument($resp) || core::xml::isElement($resp))) {
+				my $child = $resp->documentElement()->firstChild();
+
+				if (!core::xml::isText($child)) {
+					$resp->setDocumentElement($child);
+				} else {
+					$resp = $child->nodeValue();
+				}
+			}
+		}
 
 		_print_out($resp, $resp_fh, !defined($resp_file))
 			if (!$no_output);

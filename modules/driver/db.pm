@@ -82,8 +82,7 @@ sub _dmlquery($$$$)
 	# default DSN
 	## /dml/@dsn
 	my $dsn = core::xml::attrib($req, 'dsn', $NAMESPACE_URL);
-	if (!$dsn)
-	{
+	if (!$dsn) {
 		$resp->addChild(core::raise_error($reqid, $MODULE, 400,
 			_fatal => $resp,
 			req => $req,
@@ -93,8 +92,7 @@ sub _dmlquery($$$$)
 
 	## /dml/@dsn == 'reuse'
 	## /dml/@dsn == 'reuse:ID'
-	if ($dsn =~ /^reuse(:([\w-]+))?$/o)
-	{
+	if ($dsn =~ /^reuse(:([\w-]+))?$/o) {
 		my $id = $2;
 
 		my $key = 'driver.db.dsn';

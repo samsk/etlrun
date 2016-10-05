@@ -161,6 +161,13 @@ sub isElement($)
 	return (ref($_[0]) eq 'XML::LibXML::Element');
 }
 
+# isText($obj)
+sub isText($)
+{
+	return (ref($_[0]) eq 'XML::LibXML::Text');
+}
+
+
 # needsCDATA($string)
 sub needsCDATA(\$)
 {
