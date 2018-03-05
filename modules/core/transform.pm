@@ -12,6 +12,7 @@ use warnings;
 use Encode;
 use Data::Dumper;
 use Scalar::Util;
+use HTML::Entities;
 use Text::Unidecode;
 #use Unicode::Normalize;
 
@@ -411,6 +412,23 @@ sub _xsl_unaccent($)
 	return unidecode($str);
 }
 
+# _xsl_encode_entities
+sub _xsl_encode_entities($;$)
+{
+	my ($str, $entities) = @_;
+
+	return encode_entities($str, $entities);
+}
+
+# _xsl_decode_entities
+sub _xsl_decode_entities($)
+{
+	my ($str) = @_;
+
+	return eval { decode_entities($str) } // $str;
+}
+
+
 # add default functions
 @FUNCTION_MAP_def = (
 	## FUNCTION etl:str2xml($string): $node-set
@@ -437,7 +455,7 @@ sub _xsl_unaccent($)
 	{ ns => core::NAMESPACE_URL,	name => 'if',		handle => \&_xsl_if },
 	## FUNCTION etl:sleep($seconds): $numeric
 	{ ns => core::NAMESPACE_URL,	name => 'sleep',	handle => \&_xsl_sleep },
-	## FUNCTION etl:getenv($name, [, $default ]): $string
+	## FUNCTION etl:getenv($name [, $default ]): $string
 	{ ns => core::NAMESPACE_URL,	name => 'getenv',	handle => \&_xsl_getenv },
 	## FUNCTION etl:lc($string): $string
 	{ ns => core::NAMESPACE_URL,	name => 'lc',		handle => \&_xsl_lc },
@@ -447,6 +465,10 @@ sub _xsl_unaccent($)
 	{ ns => core::NAMESPACE_URL,	name => 'trim',		handle => \&_xsl_trim },
 	## FUNCTION etl:unaccent($string): $string
 	{ ns => core::NAMESPACE_URL,	name => 'unaccent',	handle => \&_xsl_unaccent },
+	## FUNCTION etl:encode_entities($string [, $entities]): $string
+	{ ns => core::NAMESPACE_URL,	name => 'encode-entities',	handle => \&_xsl_encode_entities },
+	## FUNCTION etl:decode_entities($string): $string
+	{ ns => core::NAMESPACE_URL,	name => 'decode-entities',	handle => \&_xsl_decode_entities },
 );
 @FUNCTION_MAP = @FUNCTION_MAP_def;
 

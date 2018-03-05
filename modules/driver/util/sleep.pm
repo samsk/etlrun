@@ -57,9 +57,9 @@ sub process($$$%)
 		$secs = ($max < $secs) ? $max : $secs
 			if ($max != -1);
 
-		core::log::PKG_MSG(LOG_NOTICE, " - sleeping %0.2f seconds %s", $reqid, $secs, $id ? "[$id]" : '');
+		core::log::PKG_MSG(LOG_NOTICE, " - sleeping %0.2f seconds %s", $secs, $id ? "[$id]" : '');
 		Time::HiRes::sleep($secs);
-		core::log::PKG_MSG(LOG_NOTICE, " - waking up", $reqid);
+		core::log::PKG_MSG(LOG_NOTICE, " - waking up");
 	}
 	return (core::RESPONSE_NULL, core::CT_NULL);
 }

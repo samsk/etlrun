@@ -960,6 +960,7 @@ sub _execute_it($$$$$%)
 				&& !$sth->execute(@pars)
 				&& (!defined($ignore) || $sth->errstr !~ /$ignore/))
 			{
+				core::log::PKG_MSG(LOG_INFO, " - execution failed '%s' %s", $name, $id || '');
 				return (undef, core::raise_error($reqid, $MODULE, 500,
 						#_fatal => $resp,
 						instr => $instr,
