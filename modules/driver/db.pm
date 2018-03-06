@@ -1027,7 +1027,7 @@ sub _execute($$$$$%)
 				&& core::log::level() < LOG_NOTICE)
 			{
 				# reduce information set
-				my %allowed = ( 'name' => undef, 'error' => undef, 'id' => undef );
+				my %allowed = ( 'etl:name' => undef, 'etl:error' => undef, 'etl:id' => undef );
 				foreach my $child ($err->nonBlankChildNodes())
 				{
 					if (!exists($allowed{$child->localName()})) {

@@ -2,7 +2,7 @@
 #
 # HTML-to-XML parser using HTML::Valid module
 #
-# Copyright: Samuel Behan (c) 2015-2016
+# Copyright: Samuel Behan (c) 2015-2018
 #
 package convert::text::html::tidy;
 
@@ -42,6 +42,7 @@ my %tidy_opts = (
 	'escape-cdata' => 1,
 	'output-xhtml' => 1,
 #	'output-xml' => 1,
+#	'force-output' => 1,
 );
 
 sub parse($$)

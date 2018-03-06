@@ -16,21 +16,18 @@ PERL_MODULES="
  Archive::Extract
  Alien::Tidyp HTML::Tidy
  HTML::Valid
- LMDB_File
- DBD::Pg DBD::SQLite
+ DBI DBD::Pg DBD::SQLite
+ Pg::hstore
  HTML::Selector::XPath
  Redis
  +Scalar::Util
  Sub::Name
  XML::LibXML::Devel::SetLineNumber
- DBI
- DBD::Pg
- Pg::hstore
- DBD::SQLite
- DBD::mysql
  Types::Serialiser
  Text::Unidecode
  Unicode::Normalize"
+
+export PERL_CANARY_STABILITY_NOPROMPT=1
 
 # config
 set -u;
