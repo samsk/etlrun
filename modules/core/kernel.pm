@@ -77,7 +77,7 @@ sub process($$$%)
 	# find default driver
 	$driver = core::conf::get('core.driver.default', 'file');
 
-	my $is_xml_req = (ref($req) ? 1 : 0);
+	my $is_xml_req = core::xml::isXML($req) ? 1 : 0;
 
 	# postprocessing needed
 	if ($postproc && $is_xml_req)
@@ -219,9 +219,9 @@ sub process($$$%)
 	# save attachments (we dont pass them to driver, because driver should not process it)
 	## //etl:attachment
 	my @attach;
-	if (core::xml::isXML($req))
+	if ($is_xml_req)
 	{
-		my @nodes = core::get_xpath_ctx($req)->findnodes('//' . core::NAMESPACE . ':attachment');
+		my @nodes = core::findnodes($req, '//' . core::NAMESPACE . ':attachment');
 		foreach my $nod (@nodes)
 		{
 			push(@attach, { s => $nod, p => $nod->parentNode() });
@@ -233,8 +233,7 @@ sub process($$$%)
 	core::trace::req($reqid, $req, 'kernel-driver-in:' . $driver);
 
 	# save request ID
-	my $id = core::get_attrib($req, core::ATTR_ID) || undef
-		if ($is_xml_req);
+	my $id = (($is_xml_req) ? core::get_attrib($req, core::ATTR_ID) : undef) || undef;
 
 	# process by driver now
 	{
@@ -491,11 +490,10 @@ sub _cache_response($$$$)
 
 	# response expiration timestamp
 	## @etl:ets	- expiration time stamp
-	my $cache_ets = core::get_attrib($resp, core::ATTR_EXPIRES)
-			|| core::conf::get('core.cache.force', 0);
+	my $cache_ets = core::get_attrib($resp, core::ATTR_EXPIRES);
 
 	# check user enforced caching definition
-	if (defined($cache) || $cache)
+	if (defined($cache) || $cache || ($cache = core::conf::get('core.cache.force', 0)))
 	{
 		my ($ets, $err) = core::time::parse_offset($cache);
 		return _error("failed to setup cache ($err)")
