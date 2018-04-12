@@ -8,6 +8,7 @@ package driver::adapt;
 use strict;
 use warnings;
 
+use XML::LibXML;
 use Data::Dumper;
 
 use core;
@@ -106,8 +107,11 @@ sub process($$$%)
 #	# execute req
 	my $data_root = $req_node;
 	my $data = core::kernel::process($reqid, $doc, $req_node, %params);
-	if ($data)
-	{	($data_root) = core::get_data_root($data);	}
+	if ($data) {
+		($data_root) = core::get_data_root($data);
+		($data_root) = core::get_data($data)
+			if ($data_root->nodeType != XML_ELEMENT_NODE);
+	}
 	else
 	{	$data_root = $req_node;				}
 
@@ -123,7 +127,8 @@ sub process($$$%)
 		}
 
 		# locate node
-		my ($node) = core::findnodes($data_root, $ins->{'xpath'}, %ns);
+		my $node;
+		($node) = core::findnodes($data_root, $ins->{'xpath'}, %ns);
 
 		# not found & optional => skip
 		if (!$node && $ins->{'optional'})

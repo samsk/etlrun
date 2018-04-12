@@ -370,7 +370,8 @@ sub get_data($)
 # get_data_root($document)
 sub get_data_root($)
 {
-	return get_xpath_ctx($_[0])->findnodes(core::NAMESPACE . ':data/*[1]');
+	return get_xpath_ctx($_[0])->findnodes(core::NAMESPACE . ':data/*[1]')
+		|| get_xpath_ctx($_[0])->findnodes(core::NAMESPACE . ':data/text()[1]');
 }
 
 # get_content($data)
@@ -381,7 +382,7 @@ sub get_content($)
 #	return $_[0]->textContent();
 	return $fc->nodeValue()
 		if(($fc = $_[0]->firstChild()) && !$fc->nextSibling());
-	return  $_[0]->findvalue('text()');
+	return $_[0]->findvalue('text()') || $_[0]->findvalue('//text()');
 }
 
 # get_data_content($document [, $data, $no_decode ])

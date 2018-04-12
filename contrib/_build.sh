@@ -6,6 +6,7 @@ SRCDIR="$DN/_source";
 GIT_LIBS="https://github.com/htacg/tidy-html5"
 PERL_MODULES="
  Try::Tiny Canary::Stability common::sense
+ Text::CSV Text::CSV_XS
  JSON JSON::XS JSON::Parse
  XML::SAX XML::SAX::Base XML::LibXML XML::LibXSLT
  IO::HTML HTML::HTML5::Entities HTML::HTML5::Parser
