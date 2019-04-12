@@ -41,7 +41,7 @@ sub from($$$;$)
 	core::log::SYS_CALL("%s, <DATA>, %s", $reqid, $url || core::NULL_URL);
 
 	my $recs = _convert($reqid, $$data);
-	return ({ msg => "failed to convert data to json" }, core::CT_ERROR)
+	return ({ msg => "failed to convert data from json" }, core::CT_ERROR)
 		if (!defined($recs));
 
 	# convert to json version 2

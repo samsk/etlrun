@@ -6,6 +6,8 @@ SRCDIR="$DN/_source";
 GIT_LIBS="https://github.com/htacg/tidy-html5"
 PERL_MODULES="
  Try::Tiny Canary::Stability common::sense Module::Package Module::Build
+ Try::Tiny Canary::Stability common::sense
+ Text::CSV Text::CSV_XS
  JSON JSON::XS JSON::Parse
  URI:Escape
  XML::SAX XML::SAX::Base XML::LibXML XML::LibXSLT
@@ -16,19 +18,17 @@ PERL_MODULES="
  Archive::Extract
  Alien::Tidyp HTML::Tidy
  HTML::Valid
- DBD::Pg DBD::SQLite
+ DBI DBD::Pg DBD::SQLite
+ Pg::hstore
  HTML::Selector::XPath
  +Scalar::Util
  Sub::Name
  XML::LibXML::Devel::SetLineNumber
- DBI
- DBD::Pg
- Pg::hstore
- DBD::SQLite
- DBD::mysql
  Types::Serialiser
  Text::Unidecode
  Unicode::Normalize"
+
+export PERL_CANARY_STABILITY_NOPROMPT=1
 
 # config
 set -u;

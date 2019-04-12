@@ -98,12 +98,12 @@ sub _req($$$;$)
 	if (ref($req) eq 'XML::LibXML::Document')
 	{	$req->toFH($fh, 1);			}
 	elsif (ref($req) =~ /^XML::LibXML/o)
-	{	syswrite($fh, $XML_DECL);
-		syswrite($fh, $req->toString(1));	}
+	{	print($fh $XML_DECL);
+		print($fh $req->toString(1));	}
 	elsif (ref($req))
-	{	syswrite($fh, sprintf("#0x%p\n", $req) . Dumper($req));		}
+	{	print($fh sprintf("#0x%p\n", $req) . Dumper($req));		}
 	else
-	{	syswrite($fh, $req);			}
+	{	print($fh $req);			}
 
 	# fini
 	close($fh);

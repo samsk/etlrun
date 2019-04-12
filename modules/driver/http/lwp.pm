@@ -168,7 +168,13 @@ sub _init($@)
 
 	push(@LWP::Prococol::http::EXTRA_SOCK_OPTS, SendTE => 0);
 
-	my $ua = LWP::UserAgent->new(keep_alive => _val('keep_alive', @confs));
+	my $ua = LWP::UserAgent->new(
+		keep_alive => _val('keep_alive', @confs),
+		ssl_opts => {
+			verify_hostname => 0,
+		},
+		send_te => 0,
+	);
 	my $ua_c = HTTP::Cookies->new(file => _val('cookie_file', @confs),
 					autosave => defined(_val('cookie_file', @confs)));
 	$ua->cookie_jar($ua_c);

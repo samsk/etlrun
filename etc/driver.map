@@ -18,6 +18,7 @@ http://etl.dob.sk/transform	transform
 transform			file		http://etl.dob.sk/transform
 http://etl.dob.sk/group		group
 http://etl.dob.sk/group/parallel	group::parallel
+http://etl.dob.sk/group/replicator	group::replicator
 http://etl.dob.sk/url		url
 http://etl.dob.sk/lock		lock
 #http://etl.dob.sk/util#(.+?)	util::$1
