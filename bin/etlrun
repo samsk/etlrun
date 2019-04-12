@@ -53,9 +53,9 @@ sub _print_out($$$)
 		$doc->toFH($outfh, $format);
 	} elsif(ref($doc)) {
 		print '<?xml version="1.0" encoding="utf-8"?>' . "\n";
-		syswrite($outfh, $doc->toString($format ? 2 : 0));
+		print($outfh $doc->toString($format ? 2 : 0));
 	} else {
-		syswrite($outfh, $doc);
+		print($outfh $doc);
 	}
 }
 
@@ -71,7 +71,7 @@ sub main(@)
 	core::conf::file_path($bRoot . "/etc");
 	core::conf::data_path("/");
 
-	binmode(STDOUT, ':encoding(UTF-8)');
+#	binmode(STDOUT, ':encoding(UTF-8)');
 
 	# parse command options
 	my $id = time();
@@ -145,7 +145,7 @@ sub main(@)
 	else
 	{
 		# remove envelope
-		while($no_envelope-- > 0) {
+		while($no_envelope && $no_envelope-- > 0) {
 			if(ref($resp) && (core::xml::isDocument($resp) || core::xml::isElement($resp))) {
 				my $child = $resp->documentElement()->firstChild();
 

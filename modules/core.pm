@@ -48,6 +48,9 @@ use constant ATTR_MIME_ENCODING	=> 'mime_enc';
 use constant ATTR_IS_STATIC	=> 'static';
 use constant ATTR_NOCONVERT	=> 'noconvert';
 
+# params
+use constant PARAM_ATTACHMENTS	=> '-core_attach';
+
 # WORK
 use constant SYS_BUFSIZE	=> 8096;
 
@@ -476,6 +479,12 @@ sub is_static($)
 
 	return $node->getAttributeNS(core::NAMESPACE_URL, core::ATTR_IS_STATIC)
 		|| $node->getAttributeNS(core::NAMESPACE_URL, core::ATTR_NOEXEC);
+}
+
+# get_attchments(%params)
+sub get_attachments(\%)
+{
+	return exists($_->{PARAM_ATTACHMENTS}) ? $_->{PARAM_ATTACHMENTS} : [];
 }
 
 1;

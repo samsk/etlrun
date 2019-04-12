@@ -27,7 +27,7 @@ our %CT_MAP = (
 	'application/pdf' =>
 		sub { substr($_[0], 0, 10) =~ /^%PDF-\d.\d/o; },
 	'application/json' =>
-		sub { substr($_[0], 0, 10) =~ /^\[{/o && substr($_[0], -10) =~ /}\]$/o },
+		sub { substr($_[0], 0, 10) =~ /^\[\{/o && substr($_[0], -10) =~ /}\]$/o },
 );
 
 sub to($)

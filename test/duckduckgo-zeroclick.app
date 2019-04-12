@@ -20,8 +20,7 @@
 				exclude-result-prefixes="xhtml">
 <xsl:output method="xml" indent="yes" encoding="utf-8"/>
 <xsl:template match="/">
-<result><xsl:text>
-</xsl:text>
+<result>
 	<xsl:value-of select="//xhtml:div[@id = 'zero_click_abstract']"/>
 </result>
 </xsl:template>

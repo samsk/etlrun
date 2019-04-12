@@ -5,21 +5,19 @@ DN=`dirname "$AN"`;
 SRCDIR="$DN/_source";
 GIT_LIBS="https://github.com/htacg/tidy-html5"
 PERL_MODULES="
- Try::Tiny Canary::Stability common::sense
+ Try::Tiny Canary::Stability common::sense Module::Package Module::Build
  JSON JSON::XS JSON::Parse
+ URI:Escape
  XML::SAX XML::SAX::Base XML::LibXML XML::LibXSLT
  IO::HTML HTML::HTML5::Entities HTML::HTML5::Parser
  File::LibMagic LWP::UserAgent Digest::SHA1
- Inline::Lua
  File::ShareDir
  Class::Inspector
  Archive::Extract
  Alien::Tidyp HTML::Tidy
  HTML::Valid
- LMDB_File
  DBD::Pg DBD::SQLite
  HTML::Selector::XPath
- Redis
  +Scalar::Util
  Sub::Name
  XML::LibXML::Devel::SetLineNumber

@@ -227,6 +227,7 @@ sub process($$$%)
 			push(@attach, { s => $nod, p => $nod->parentNode() });
 			$nod->unbindNode();
 		}
+		#$params{core::PARAM_ATTACHMENTS} = \@attach;
 	}
 
 	# trace

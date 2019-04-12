@@ -96,7 +96,7 @@ sub process($$$%)
 		{	core::xml::moveNode($nod, $resp4);	}
 		else
 		{
-			core::log::SUB_MSG(LOG_WARNING, " - got textual result, maybe because IMPUT xml was not a DOCUMENT but a NODE")
+			core::log::SUB_MSG(LOG_WARNING, " - got textual result, maybe because INPUT xml was not a DOCUMENT but a NODE")
 				if (!$req_doc);
 
 			# possibly invalid transformation resulting in plain text document
